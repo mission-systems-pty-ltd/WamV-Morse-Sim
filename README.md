@@ -2,7 +2,7 @@
 
 The files in this package constitute a real-time Morse model of the WAM-V autonomous marine vehicle developed by the Mission Systems team. The model uses Python scripts to compute the thrust and drag for each hull separately and relies on the Bullet physics engine in Blender to generate the resulting accelerations and velocities in different parts of the model. This simulator uses MOOS-IvP as its middleware and helm, however Morse is compatible with several other middlewares including ROS.
 
-[![wamv_video](https://imgur.com/a/jr3NAxa)](https://www.youtube.com/watch?v=2SkJ2wC5OeA&t=11s)
+[![wamv_video](https://i.imgur.com/Y5pn1OT.png)](https://www.youtube.com/watch?v=2SkJ2wC5OeA&t=11s)
 
 ---
 
