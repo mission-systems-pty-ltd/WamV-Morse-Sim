@@ -7,6 +7,11 @@
 *.o
 *.obj
 
+# Bytecode
+*.py[cod]
+*$py
+__pycache__/
+
 # Precompiled Headers
 *.gch
 *.pch

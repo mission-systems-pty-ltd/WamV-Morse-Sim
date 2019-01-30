@@ -1,0 +1,92 @@
+#!/usr/bin/env python3.6
+
+# ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ Mission Systems Pty Ltd ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+# This file is subject to the terms and conditions defined in
+# file 'LICENSE', which is part of this source code package.
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Project: WamV-Morse-Sim
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Primary Author:
+# david battle <david.battle@missionsystems.com.au>
+# Other Author(s):
+# none
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Date Created:
+# 29/01/2019
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+import matplotlib.pyplot as plt
+from pymoos import pymoos
+import numpy as np
+import time
+import json
+
+t_vel = []
+t_acc = []
+vel = []
+acc = []
+
+comms = pymoos.comms()
+
+def c():
+    comms.register('MORSE_DVL_BODY_VEL_X',0)
+    comms.register('MORSE_IMU_ACCEL_X',0)
+
+    return True
+
+def onm():
+
+    msg_list = comms.fetch()
+
+    for msg in msg_list:
+
+        val = msg.double()
+        ts  = msg.time()
+
+        # Ground-truth state messages
+        if msg.name() == 'MORSE_DVL_BODY_VEL_X':
+            t_vel.append(ts)
+            vel.append(val)
+
+        elif msg.name() == 'MORSE_IMU_ACCEL_X':
+            t_acc.append(ts)
+            acc.append(val)
+
+    return True
+
+def main():
+
+    comms.set_on_connect_callback(c)
+    comms.set_on_mail_callback(onm)
+    comms.run('localhost',9000,'plotter')
+
+    fig, ax1 = plt.subplots()
+
+    ax1.set_xlabel('Time (s)')
+    ax1.tick_params('y', colors='b')
+    ax1.set_ylabel('Speed (m/s)', color = 'b')
+    ax1.plot(t_vel, vel, 'b-', linewidth=.1, label = "speed")
+
+    ax2 = ax1.twinx()
+    ax2.tick_params('y', colors='r')
+    ax2.set_ylabel('Acceleration (m/s^2)', color = 'r')
+    ax2.plot(t_acc, acc, 'r-', linewidth=.1, label = "acceleration")
+
+    plt.title('WAMV Velocity and Acceleration')
+    plt.grid()
+    plt.ion()
+
+    # legend = plt.legend(loc='lower right', shadow=False, fontsize='x-large')
+    fig.tight_layout()
+    plt.show(block = False)
+
+    while True:
+
+        ax1.plot(t_vel, vel, 'b-', linewidth=.1, label = "speed")
+
+        ax2.plot(t_acc, acc, 'r-', linewidth=.1, label = "acceleration")
+
+        plt.pause(0.1)
+
+if __name__ == "__main__":
+    main()        

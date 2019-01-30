@@ -1,0 +1,77 @@
+#!/usr/bin/env python3.6
+
+# ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ Mission Systems Pty Ltd ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+# This file is subject to the terms and conditions defined in
+# file 'LICENSE', which is part of this source code package.
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Project: WamV-Morse-Sim
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Primary Author:
+# david battle <david.battle@missionsystems.com.au>
+# Other Author(s):
+# none
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Date Created:
+# 29/01/2019
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+import matplotlib.pyplot as plt
+from pymoos import pymoos
+import numpy as np
+import time
+import json
+
+t = []
+speed = []
+
+comms = pymoos.comms()
+
+def c():
+    comms.register('MORSE_DVL_BODY_VEL_X',0)
+    
+    return True
+
+def onm():
+
+    global t
+    global acc_x, acc_y, acc_z
+
+    msg_list = comms.fetch()
+
+    for msg in msg_list:
+
+        val = msg.double()
+
+        # Ground-truth state messages
+        if msg.name() == 'MORSE_DVL_BODY_VEL_X':
+
+            t.append(msg.time())
+            speed.append(val)
+
+    return True
+
+def main():
+
+    comms.set_on_connect_callback(c)
+    comms.set_on_mail_callback(onm)
+    comms.run('localhost',9000,'plotter')
+
+    plt.xlabel('Time (s)')
+    plt.ylabel('Speed (m/s)')
+    plt.title('WAMV Speed')
+    plt.grid()
+    plt.ion()
+
+    plt.plot(t, speed, 'r-', linewidth=.1, label = "speed")
+
+    legend = plt.legend(loc='lower right', shadow=False, fontsize='x-large')
+    plt.show(block = False)
+
+    while True:
+
+        plt.plot(t, speed, 'r-', linewidth=.1, label = "speed")
+
+        plt.pause(0.1)
+
+if __name__ == "__main__":
+    main()        

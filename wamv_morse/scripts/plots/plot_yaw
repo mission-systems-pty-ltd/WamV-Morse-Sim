@@ -1,0 +1,75 @@
+#!/usr/bin/env python3.6
+
+# ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ Mission Systems Pty Ltd ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+# This file is subject to the terms and conditions defined in
+# file 'LICENSE', which is part of this source code package.
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Project: WamV-Morse-Sim
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Primary Author:
+# david battle <david.battle@missionsystems.com.au>
+# Other Author(s):
+# none
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Date Created:
+# 29/01/2019
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+import matplotlib.pyplot as plt
+from pymoos import pymoos
+from math import degrees
+import numpy as np
+import time
+import json
+
+t = []
+yaw = []
+
+comms = pymoos.comms()
+
+def c():
+    comms.register('MORSE_SIM_YAW',0)
+    
+    return True
+
+def onm():
+
+    msg_list = comms.fetch()
+
+    for msg in msg_list:
+
+        val = msg.double()
+
+        # Ground-truth state messages
+        if msg.name() == 'MORSE_SIM_YAW':
+
+            t.append(msg.time())
+            yaw.append(degrees(val))
+
+    return True
+
+def main():
+
+    comms.set_on_connect_callback(c)
+    comms.set_on_mail_callback(onm)
+    comms.run('localhost',9000,'plotter')
+
+    plt.xlabel('Time (s)')
+    plt.ylabel('Yaw (deg)')
+    plt.title('WAMV Yaw')
+    plt.grid()
+    plt.ion()
+
+    plt.plot(t, yaw, 'r-', linewidth=.1, label = "yaw")
+
+    legend = plt.legend(loc='lower right', shadow=False, fontsize='x-large')
+    plt.show(block = False)
+
+    while True:
+
+        plt.plot(t, yaw, 'r-', linewidth=.1, label = "yaw")
+
+        plt.pause(0.1)
+
+if __name__ == "__main__":
+    main()        

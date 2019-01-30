@@ -1,0 +1,173 @@
+////////////////////////////////////////
+//  global variables anyone can use them
+
+ServerHost = localhost
+ServerPort = 9000
+Community  = WAMV
+
+//Vehicle Type
+VehicleType = WAMV
+
+Simulate = true
+
+//////////////////////
+//geodetic constants
+//End of main pier at Creswell                                                  
+LatOrigin =  -35.121892
+LongOrigin = 150.705949
+MagneticOffset = 12.5
+
+//////////////////////////////
+// Antler configuration  block
+ProcessConfig = ANTLER
+{
+	MSBetweenLaunches = 100
+
+    Run = MOOSDB	    @	NewConsole = false
+    Run = uMS	            @	NewConsole = false
+    Run = pEchoVar	    @	NewConsole = true
+    Run = pMarinePID        @   NewConsole = false
+    Run = pNodeReporter     @   NewConsole = false
+    Run = pHelmIvP          @   NewConsole = true
+    Run = pLogger           @   NewConsole = false
+    Run = pMarineViewer     @   NewConsole = false
+    Run = uTimerScript      @   NewConsole = false
+    Run = uProcessWatch     @   NewConsole = false
+}
+
+///////////////////////////////////////////////  
+ProcessConfig = pEchoVar
+{
+    echo = MORSE_DVL_HEADING    -> NAV_HEADING
+    echo = MORSE_DVL_BODY_VEL_X -> NAV_SPEED
+    echo = MORSE_SIM_YAW        -> NAV_YAW
+    echo = MORSE_SIM_X          -> NAV_X
+    echo = MORSE_SIM_Y          -> NAV_Y
+}
+
+///////////////////////////////////////////////
+ProcessConfig = pMarinePID
+{
+  AppTick    = 20
+  CommsTick  = 20
+
+  VERBOSE       = false
+  DEPTH_CONTROL = false
+
+  // Yaw PID controller
+  YAW_PID_KP     = 0.1
+  YAW_PID_KD     = 0.0
+  YAW_PID_KI     = 0.0
+  YAW_PID_INTEGRAL_LIMIT = 0.07
+
+  // Speed PID controller
+  SPEED_PID_KP     = 1.0
+  SPEED_PID_KD     = 0.0
+  SPEED_PID_KI     = 0.0
+  SPEED_PID_INTEGRAL_LIMIT = 0.07
+
+  //MAXIMUMS
+  MAXRUDDER    = 100
+  MAXTHRUST    = 100
+
+  // A non-zero SPEED_FACTOR overrides use of SPEED_PID
+  // Will set DESIRED_THRUST = DESIRED_SPEED * SPEED_FACTOR
+  // SPEED_FACTOR = 20
+}
+
+//------------------------------------------
+// uProcessWatch config block
+
+ProcessConfig = uProcessWatch                                   
+{                                                               
+  AppTick   = 4                                                 
+  CommsTick = 4                                                 
+                                                                
+  watch_all = true                                              
+  nowatch   = uXMS*                                               
+}     
+
+//------------------------------------------
+// pLogger config block
+
+ProcessConfig = pLogger
+{
+  AppTick   = 5
+  CommsTick = 5
+
+  File      = LOG
+  PATH      = ./
+  SyncLog   = true @ 0.2
+  AsyncLog  = true
+  FileTimeStamp = true
+
+  LogAuxSrc = true
+  WildCardLogging = true
+  WildCardOmitPattern = *_STATUS
+  WildCardOmitPattern = DB_VARSUMMARY
+  WildCardOmitPattern = DB_RWSUMMARY
+}
+                                   
+//------------------------------------------
+// pHelmIvP config block
+
+ProcessConfig = pHelmIvP
+{
+  AppTick    = 4
+  CommsTick  = 4
+
+  behaviors  = wamv.bhv
+  verbose    = quiet
+  domain     = course:0:359:360
+  domain     = speed:0:4:41
+}
+
+//------------------------------------------
+// pMarineViewer config block
+
+ProcessConfig = pMarineViewer
+{
+  AppTick    = 4
+  CommsTick  = 4
+
+  tiff_file            = JB_bath.tif
+  set_pan_x            = 10
+  set_pan_y            = 10
+  zoom                 = 0.1
+  vehicle_shape_scale  = 20
+  hash_delta           = 1000
+  hash_shade           = 0.4
+  hash_viewable        = true
+  trails_point_size    = 5
+  trails_color         = green
+  trails_length        = 1000
+
+  left_context[survey-point] = SURVEY_UPDATES = points = vname=$(VNAME), x=$(XPOS), y=$(YPOS), format=bowtie, label=WAMV, wid1=10, wid2=25, wid3=30, height=20
+
+//  left_context[survey-point] = SURVEY_UPDATES = points = vname=$(VNAME), x=$(XPOS), y=$(YPOS), format=lawnmower, label=WAMV, width=70, height=30, lane_width=8, rows=north-south, degs=80
+
+  left_context[survey-point] = SURVEY = true
+
+  scope = SURVEY_UPDATES
+  scope = MVIEWER_LCLICK
+  scope = GPS_UPDATE_RECEIVED
+
+  action = UP_LOITER="speed=0"
+  action = UP_LOITER="speed=1.2"
+
+  button_one   = DEPLOY # DEPLOY=true # MOOS_MANUAL_OVERRIDE=false
+  button_two   = MOOS_MANUAL_OVERRIDE=false # RETURN=false
+  button_two   = RETURN # RETURN=true
+  button_three = SURVEY-true # SURVEY=true
+  button_four  = SURVEY-false # SURVEY=false
+}
+
+//------------------------------------------
+// pNodeReporter config block
+
+ProcessConfig = pNodeReporter
+{
+  AppTick     = 2
+  CommsTick   = 2
+  vessel_type = ship
+}
