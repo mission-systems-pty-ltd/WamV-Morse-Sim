@@ -56,11 +56,10 @@ $ svn co https://oceanai.mit.edu/svn/moos-ivp-aro/releases/moos-ivp-17.7.2 moos-
 ```
 (Note: at time of writing, moos-ivp 17.7.2 was the most recent stable release, check http://oceanai.mit.edu/moos-ivp/pmwiki/pmwiki.php?n=Site.Download for the most stable release, and see other information about the MOOS-IvP software)
 
-Now build MOOS-IvP using the following commands (you may need to add `sudo` if installed into /usr/local or similar):
+Now build MOOS-IvP using the following commands (`sudo` priviledges may be required):
 ```shell
 $ cd moos-ivp
-$ sudo ./build-moos.sh
-$ sudo ./build-ivp.sh
+$ sudo ./build.sh
 ```
 (Check successful installation using `which pAntler`, which should return output similar to `/usr/local/bin/pAntler`)
 
